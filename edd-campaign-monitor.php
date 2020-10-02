@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Easy Digital Downloads - Campaign Monitor
-Plugin URL: http://easydigitaldownloads.com/extension/campaign-monitor
+Plugin URL: https://easydigitaldownloads.com/downloads/campaign-monitor/
 Description: Include a Campaign Monitor signup option with your Easy Digital Downloads checkout
 Version: 1.2
 Author: Sandhills Development, LLC
