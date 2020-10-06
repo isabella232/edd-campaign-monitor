@@ -2,32 +2,59 @@
 
 require_once '../../csrest_subscribers.php';
 
-$wrap = new CS_REST_Subscribers('Your list ID', 'Your API Key');
+$auth = array(
+    'access_token' => 'your access token',
+    'refresh_token' => 'your refresh token');
+$wrap = new CS_REST_Subscribers('Your list ID', $auth);
 
 $result = $wrap->import(array(
     array(
 	    'EmailAddress' => 'Subscriber email',
 	    'Name' => 'Subscriber name',
 	    'CustomFields' => array(
-            array(
-                'Key' => 'Field Key',
-                'Value' => 'Field Value'
+	        array(
+	            'Key' => 'Field 1 Key',
+	            'Value' => 'Field Value'
+	        ),
+	        array(
+	            'Key' => 'Field 2 Key',
+	            'Value' => 'Field Value'
+	        ),
+	        array(
+	            'Key' => 'Multi Option Field 1',
+	            'Value' => 'Option 1'
+	        ),
+	        array(
+	            'Key' => 'Multi Option Field 1',
+	            'Value' => 'Option 2'
+	        )
             )
-        )
 	),
 	array(
 	    'EmailAddress' => '2nd Subscriber email',
 	    'Name' => '2nd Subscriber name',
 	    'CustomFields' => array(
 	        array(
-	            'Key' => 'Field Key',
+	            'Key' => 'Field 1 Key',
 	            'Value' => 'Field Value'
+	        ),
+	        array(
+	            'Key' => 'Field 2 Key',
+	            'Value' => 'Field Value'
+	        ),
+	        array(
+	            'Key' => 'Multi Option Field 1',
+	            'Value' => 'Option 1'
+	        ),
+	        array(
+	            'Key' => 'Multi Option Field 1',
+	            'Value' => 'Option 2'
 	        )
 	    )
 	)
-), true);
+), false);
 
-echo "Result of POST /api/v3/subscribers/{list id}/import.{format}\n<br />";
+echo "Result of POST /api/v3.1/subscribers/{list id}/import.{format}\n<br />";
 if($result->was_successful()) {
     echo "Subscribed with results <pre>";
     var_dump($result->response);

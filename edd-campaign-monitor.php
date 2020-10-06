@@ -140,6 +140,7 @@ function eddcp_subscribe_email($email, $name) {
 			'EmailAddress' => $email,
 			'Name' => $name,
 			'Resubscribe' => true,
+			'ConsentToTrack' => 'Yes',
 			'CustomFields' => $custom_fields
 		) );
 
@@ -167,7 +168,7 @@ add_action('edd_purchase_form_before_submit', 'eddcp_subscribe_fields', 100);
 
 // checks whether a user should be signed up for he mailchimp list
 function eddcp_check_for_email_signup($posted, $user_info) {
-	if($posted['eddcp_campaign_monitor_signup']) {
+	if( isset( $posted['eddcp_campaign_monitor_signup'] ) ) {
 
 		$email = $user_info['email'];
 		$name = $user_info['first_name'] . ' ' . $user_info['last_name'];

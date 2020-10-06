@@ -2,13 +2,18 @@
 
 require_once '../../csrest_lists.php';
 
-$wrap = new CS_REST_Lists('List ID', 'Your API Key');
+$auth = array(
+    'access_token' => 'your access token',
+    'refresh_token' => 'your refresh token');
+$wrap = new CS_REST_Lists('List ID', $auth);
 
-$result = $wrap->get_active_subscribers('Added since', 1, 50, 'email', 'asc');
+//The 6th argument will return the tracking preference of the subscribers - 'ConsentToTrack'
+$result = $wrap->get_active_subscribers('Added since', 1, 50, 'email', 'asc', true);
+
 //$result = $wrap->get_active_subscribers(date('Y-m-d', strtotime('-30 days')), 
 //  page number, page size, order by, order direction);
 
-echo "Result of GET /api/v3/lists/{ID}/active\n<br />";
+echo "Result of GET /api/v3.1/lists/{ID}/active\n<br />";
 if($result->was_successful()) {
     echo "Got subscribers\n<br /><pre>";
     var_dump($result->response);

@@ -2,10 +2,13 @@
 
 require_once '../../csrest_subscribers.php';
 
-$wrap = new CS_REST_Subscribers('Your list ID', 'Your API Key');
+$auth = array(
+    'access_token' => 'your access token',
+    'refresh_token' => 'your refresh token');
+$wrap = new CS_REST_Subscribers('Your list ID', $auth);
 $result = $wrap->get_history('Email address');
 
-echo "Result of GET /api/v3/subscribers/{list id}/history.{format}?email={email}\n<br />";
+echo "Result of GET /api/v3.1/subscribers/{list id}/history.{format}?email={email}\n<br />";
 if($result->was_successful()) {
     echo "Got subscriber history <pre>";
     var_dump($result->response);

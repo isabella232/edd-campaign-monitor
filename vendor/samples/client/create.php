@@ -2,17 +2,18 @@
 
 require_once '../../csrest_clients.php';
 
-$wrap = new CS_REST_Clients(NULL, 'Your API Key');
+$auth = array(
+    'access_token' => 'your access token',
+    'refresh_token' => 'your refresh token');
+$wrap = new CS_REST_Clients(NULL, $auth);
 
 $result = $wrap->create(array(
     'CompanyName' => 'Clients company name',
-    'ContactName' => 'Clients contact name',
-    'EmailAddress' => 'Clients email',
     'Country' => 'Clients country',
     'Timezone' => 'Clients timezone'
 ));
 
-echo "Result of POST /api/v3/clients\n<br />";
+echo "Result of POST /api/v3.1/clients\n<br />";
 if($result->was_successful()) {
     echo "Created with ID\n<br />".$result->response;
 } else {

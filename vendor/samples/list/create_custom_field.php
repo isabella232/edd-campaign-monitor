@@ -2,7 +2,10 @@
 
 require_once '../../csrest_lists.php';
 
-$wrap = new CS_REST_Lists('List ID', 'Your API Key');
+$auth = array(
+    'access_token' => 'your access token',
+    'refresh_token' => 'your refresh token');
+$wrap = new CS_REST_Lists('List ID', $auth);
 
 /*
  * The DataType parameter must be one of
@@ -21,7 +24,7 @@ $result = $wrap->create_custom_field(array(
     'Options' => array('First option', 'Second Option')
 ));
 
-echo "Result of POST /api/v3/lists/{ID}/customfields\n<br />";
+echo "Result of POST /api/v3.1/lists/{ID}/customfields\n<br />";
 if($result->was_successful()) {
     echo "Created with ID\n<br />".$result->response;
 } else {

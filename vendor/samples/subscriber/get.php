@@ -2,10 +2,15 @@
 
 require_once '../../csrest_subscribers.php';
 
-$wrap = new CS_REST_Subscribers('Your list ID', 'Your API Key');
-$result = $wrap->get('Email address');
+$auth = array(
+    'access_token' => 'your access token',
+    'refresh_token' => 'your refresh token');
+$wrap = new CS_REST_Subscribers('Your list ID', $auth);
 
-echo "Result of GET /api/v3/subscribers/{list id}.{format}?email={email}\n<br />";
+//The 2nd argument will return the tracking preference of the subscriber - 'ConsentToTrack'
+$result = $wrap->get('Email address', true);
+
+echo "Result of GET /api/v3.1/subscribers/{list id}.{format}?email={email}\n<br />";
 if($result->was_successful()) {
     echo "Got subscriber <pre>";
     var_dump($result->response);

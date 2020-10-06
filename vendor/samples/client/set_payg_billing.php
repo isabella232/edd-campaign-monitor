@@ -2,7 +2,10 @@
 
 require_once '../../csrest_clients.php';
 
-$wrap = new CS_REST_Clients('Your clients ID', 'Your API Key');
+$auth = array(
+    'access_token' => 'your access token',
+    'refresh_token' => 'your refresh token');
+$wrap = new CS_REST_Clients('Your client ID', $auth);
 
 /*
  * Specific markup values can be set via the
@@ -23,7 +26,7 @@ $result = $wrap->set_payg_billing(array(
 'MarkupOnDesignSpamTest' => 7 */
 ));
 
-echo "Result of PUT /api/v3/clients/{id}/setpaygbilling\n<br />";
+echo "Result of PUT /api/v3.1/clients/{id}/setpaygbilling\n<br />";
 if($result->was_successful()) {
     echo "Updated with Code ".$result->http_status_code;
 } else {

@@ -2,7 +2,10 @@
 
 require_once '../../csrest_lists.php';
 
-$wrap = new CS_REST_Lists('List ID', 'Your API Key');
+$auth = array(
+    'access_token' => 'your access token',
+    'refresh_token' => 'your refresh token');
+$wrap = new CS_REST_Lists('List ID', $auth);
 
 /*
  * The Events array must contain a combination of 
@@ -20,7 +23,7 @@ $result = $wrap->create_webhook(array(
     'PayloadFormat' => CS_REST_WEBHOOK_FORMAT_JSON
 ));
 
-echo "Result of POST /api/v3/lists/{ID}/webhooks\n<br />";
+echo "Result of POST /api/v3.1/lists/{ID}/webhooks\n<br />";
 if($result->was_successful()) {
     echo "Created with ID\n<br />".$result->response;
 } else {

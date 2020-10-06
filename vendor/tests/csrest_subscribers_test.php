@@ -1,39 +1,49 @@
 <?php
 
-require_once 'simpletest/autorun.php';
-require_once '../class/transport.php';
-require_once '../class/serialisation.php';
-require_once '../class/log.php';
-require_once '../csrest_subscribers.php';
+require_once __DIR__.'/../vendor/autoload.php';
+require_once __DIR__.'/../vendor/simpletest/simpletest/autorun.php';
 
 @Mock::generate('CS_REST_Log');
 @Mock::generate('CS_REST_NativeJsonSerialiser');
 @Mock::generate('CS_REST_CurlTransport');
 
-class CS_REST_TestSubscribers extends CS_REST_TestBase {
+class CS_REST_ApiKeyTestSubscribers extends CS_REST_TestSubscribers {
+    var $auth = array('api_key' => 'not a real api key');
+}
+
+class CS_REST_OAuthTestSubscribers extends CS_REST_TestSubscribers {
+    var $auth = array(
+        'access_token' => '7y872y3872i3eh',
+        'refresh_token' => 'kjw8qjd9ow8jo');
+}
+
+abstract class CS_REST_TestSubscribers extends CS_REST_TestBase {
     var $list_id = 'not a real list id';
     var $list_base_route;
 
     function set_up_inner() {
         $this->list_base_route = $this->base_route.'subscribers/'.$this->list_id;
-        $this->wrapper = &new CS_REST_Subscribers($this->list_id, $this->api_key, $this->protocol, $this->log_level,
+        $this->wrapper = new CS_REST_Subscribers($this->list_id, $this->auth, $this->protocol, $this->log_level,
         $this->api_host, $this->mock_log, $this->mock_serialiser, $this->mock_transport);
     }
 
     function testadd() {
         $raw_result = '';
 
+
         $call_options = $this->get_call_options($this->list_base_route.'.json', 'POST');
 
         $subscriber = array (
             'Email' => 'test@test.com',
             'Name' => 'Widget Man!',
-            'CustomFields' => array(array(1,2), array(3,4))
+            'CustomFields' => array(array(1,2), array(3,4)),
+            'ConsentToTrack' => 'yes'
         );
 
         $this->general_test_with_argument('add', $subscriber, $call_options,
 			$raw_result, $raw_result, 'subscriber was serialised to this');
     }
+
 
     function testupdate() {
         $raw_result = '';
@@ -46,7 +56,8 @@ class CS_REST_TestSubscribers extends CS_REST_TestBase {
         $subscriber = array (
             'Email' => 'test2@test.com',
             'Name' => 'Widget Man!',
-            'CustomFields' => array(array(1,2), array(3,4))
+            'CustomFields' => array(array(1,2), array(3,4)),
+            'ConsentToTrack' => 'unchanged',
         );
 
         $transport_result = array (
@@ -71,6 +82,7 @@ class CS_REST_TestSubscribers extends CS_REST_TestBase {
         $response_code = 200;
         $resubscribe = true;
 		$queueSubscriptionBasedAutoResponders = true;
+        $restartSubscriptionBasedAutoResponders = false;
 
         $call_options = $this->get_call_options($this->list_base_route.'/import.json', 'POST');
 
@@ -78,19 +90,22 @@ class CS_REST_TestSubscribers extends CS_REST_TestBase {
             array (
     	            'Email' => 'test@test.com',
     	            'Name' => 'Widget Man!',
-    	            'CustomFields' => array(array(1,2), array(3,4))
+    	            'CustomFields' => array(array(1,2), array(3,4)),
+                    'ConsentToTrack' => 'no',
             ),
             array (
                     'Email' => 'test@test.com',
                     'Name' => 'Widget Man!',
-                    'CustomFields' => array(array(1,2), array(3,4))
+                    'CustomFields' => array(array(1,2), array(3,4)),
+                    'ConsentToTrack' => 'yes',
             )
         );
 
         $data = array(
                 'Resubscribe' => $resubscribe,
                 'QueueSubscriptionBasedAutoResponders' => $queueSubscriptionBasedAutoResponders,
-                'Subscribers' => $subscribers 
+                'Subscribers' => $subscribers,
+                'RestartSubscriptionBasedAutoresponders' => $restartSubscriptionBasedAutoResponders
         );
 
         $transport_result = array (
@@ -115,9 +130,10 @@ class CS_REST_TestSubscribers extends CS_REST_TestBase {
         $deserialised = array(1,2,34,5);
         $response_code = 200;
         $email = 'test@test.com';
+        $tracking_pref = 'true';
 
         $call_options = $this->get_call_options(
-            $this->list_base_route.'.json?email='.urlencode($email), 'GET');
+            $this->list_base_route.'.json?email='.urlencode($email).'&includeTrackingPreference='.$tracking_pref, 'GET');
 
         $transport_result = array (
             'code' => $response_code, 
@@ -129,7 +145,7 @@ class CS_REST_TestSubscribers extends CS_REST_TestBase {
         $this->setup_transport_and_serialisation($transport_result, $call_options,
             $deserialised, $raw_result, NULL, NULL, $response_code);
 
-        $result = $this->wrapper->get($email);
+        $result = $this->wrapper->get($email, true);
 
         $this->assertIdentical($expected_result, $result);
     }

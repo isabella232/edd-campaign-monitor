@@ -1,6 +1,7 @@
 <?php
 
-require_once 'simpletest/autorun.php';
+require_once __DIR__.'/../../vendor/autoload.php';
+require_once __DIR__.'/../../vendor/simpletest/simpletest/autorun.php';
 require_once '../class/transport.php';
 require_once '../class/log.php';
 
@@ -8,8 +9,9 @@ require_once '../class/log.php';
 @Mock::generate('CS_REST_SocketWrapper');
 @Mock::generatePartial(
     'CS_REST_SocketTransport', 
-    'PartialSocketTransport', 
-array('_build_request', '_get_status_code'));
+    'PartialSocketTransport',
+    array('_build_request', '_get_status_code')
+);
 
 class CS_REST_TestSocketTransport extends UnitTestCase {
     var $mock_wrapper;
@@ -24,7 +26,7 @@ class CS_REST_TestSocketTransport extends UnitTestCase {
 
         $this->transport = new CS_REST_SocketTransport($this->mock_log, $this->mock_wrapper);
         $this->partial = new PartialSocketTransport($this);
-        $this->partial->CS_REST_SocketTransport($this->mock_log, $this->mock_wrapper);
+        $this->partial->__construct($this->mock_log, $this->mock_wrapper);
     }
 
     function test_make_call_http() {
@@ -41,7 +43,7 @@ class CS_REST_TestSocketTransport extends UnitTestCase {
         $call_options = array(
             'method' => 'CONJURE',
             'route' => $protocol.'://'.$host.$path,
-            'host' => $host      
+            'host' => $host
         );
 
         $request = 'Get me some data!';
@@ -113,19 +115,19 @@ Server: Microsoft-IIS/7.0';
 
     function test_build_request_no_data_or_gzip() {
         $call_options = array(
-    	    'method' => 'CONJURE',
-    	    'credentials' => 'Chuck:Norris',
-    	    'userAgent' => 'Nozilla/ Firechuck',
-    	    'contentType' => 'application/visa'    	    
-    	    );
-    	     
-    	    $host = 'api.test.createsend.com';
-    	    $path = '/path/to/resource';
-    	     
-    	    $expected =
-    	    $call_options['method'].' '.$path." HTTP/1.1\n".
+            'method' => 'CONJURE',
+            'authdetails' => array('api_key' => 'chucknorris'),
+            'userAgent' => 'Nozilla/ Firechuck',
+            'contentType' => 'application/visa'
+        );
+
+        $host = 'api.test.createsend.com';
+        $path = '/path/to/resource';
+
+        $expected =
+        $call_options['method'].' '.$path." HTTP/1.1\n".
 'Host: '.$host."\n".
-'Authorization: Basic '.base64_encode($call_options['credentials'])."\n".
+'Authorization: Basic '.base64_encode($call_options['authdetails']['api_key'].":nopass")."\n".
 'User-Agent: '.$call_options['userAgent']."\n".
 "Connection: Close\n".
 'Content-Type: '.$call_options['contentType']."\n\n\n";
@@ -136,74 +138,74 @@ Server: Microsoft-IIS/7.0';
     function test_build_request_no_data_with_gzip() {
         $call_options = array(
             'method' => 'CONJURE',
-            'credentials' => 'Chuck:Norris',
+            'authdetails' => array('api_key' => 'chucknorris'),
             'userAgent' => 'Nozilla/ Firechuck',
-            'contentType' => 'application/visa'         
-            );
+            'contentType' => 'application/visa'
+        );
              
-            $host = 'api.test.createsend.com';
-            $path = '/path/to/resource';
+        $host = 'api.test.createsend.com';
+        $path = '/path/to/resource';
              
-            $expected =
-            $call_options['method'].' '.$path." HTTP/1.1\n".
+        $expected =
+        $call_options['method'].' '.$path." HTTP/1.1\n".
 'Host: '.$host."\n".
-'Authorization: Basic '.base64_encode($call_options['credentials'])."\n".
+'Authorization: Basic '.base64_encode($call_options['authdetails']['api_key'].":nopass")."\n".
 'User-Agent: '.$call_options['userAgent']."\n".
 "Connection: Close\n".
 'Content-Type: '.$call_options['contentType']."\n".
 "Accept-Encoding: gzip\n\n\n";
-             
-            $this->assertIdentical($this->transport->_build_request($call_options, $host, $path, true), $expected);
+
+        $this->assertIdentical($this->transport->_build_request($call_options, $host, $path, true), $expected);
     }
 
     function test_build_request_with_data_no_gzip() {
         $call_options = array(
             'method' => 'CONJURE',
-            'credentials' => 'Chuck:Norris',
+            'authdetails' => array('api_key' => 'chucknorris'),
             'userAgent' => 'Nozilla/ Firechuck',
             'contentType' => 'application/visa',
-            'data' => 'Send this to your bank for a new Credit Card!'      
-            );
+            'data' => 'Send this to your bank for a new Credit Card!'
+        );
 
-            $host = 'api.test.createsend.com';
-            $path = '/path/to/resource';
+        $host = 'api.test.createsend.com';
+        $path = '/path/to/resource';
 
-            $expected =
-            $call_options['method'].' '.$path." HTTP/1.1\n".
+        $expected =
+        $call_options['method'].' '.$path." HTTP/1.1\n".
 'Host: '.$host."\n".
-'Authorization: Basic '.base64_encode($call_options['credentials'])."\n".
+'Authorization: Basic '.base64_encode($call_options['authdetails']['api_key'].":nopass")."\n".
 'User-Agent: '.$call_options['userAgent']."\n".
 "Connection: Close\n".
 'Content-Type: '.$call_options['contentType']."\n".
 'Content-Length: '.strlen($call_options['data'])."\n\n".
-            $call_options['data']."\n\n";
+        $call_options['data']."\n\n";
 
-            $this->assertIdentical($this->transport->_build_request($call_options, $host, $path, false), $expected);
+        $this->assertIdentical($this->transport->_build_request($call_options, $host, $path, false), $expected);
     }
 
     function test_build_request_with_data_and_gzip() {
         $call_options = array(
             'method' => 'CONJURE',
-            'credentials' => 'Chuck:Norris',
+            'authdetails' => array('api_key' => 'chucknorris'),
             'userAgent' => 'Nozilla/ Firechuck',
             'contentType' => 'application/visa',
-            'data' => 'Send this to your bank for a new Credit Card!'      
-            );
+            'data' => 'Send this to your bank for a new Credit Card!'
+        );
 
-            $host = 'api.test.createsend.com';
-            $path = '/path/to/resource';
+        $host = 'api.test.createsend.com';
+        $path = '/path/to/resource';
 
-            $expected =
-            $call_options['method'].' '.$path." HTTP/1.1\n".
+        $expected =
+        $call_options['method'].' '.$path." HTTP/1.1\n".
 'Host: '.$host."\n".
-'Authorization: Basic '.base64_encode($call_options['credentials'])."\n".
+'Authorization: Basic '.base64_encode($call_options['authdetails']['api_key'].":nopass")."\n".
 'User-Agent: '.$call_options['userAgent']."\n".
 "Connection: Close\n".
 'Content-Type: '.$call_options['contentType']."\n".
 "Accept-Encoding: gzip\n".
 'Content-Length: '.strlen($call_options['data'])."\n\n".
-            $call_options['data']."\n\n";
+        $call_options['data']."\n\n";
 
-            $this->assertIdentical($this->transport->_build_request($call_options, $host, $path, true), $expected);
+        $this->assertIdentical($this->transport->_build_request($call_options, $host, $path, true), $expected);
     }
 }

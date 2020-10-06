@@ -2,11 +2,14 @@
 
 require_once '../../csrest_lists.php';
 
-$wrap = new CS_REST_Lists('List ID', 'Your API Key');
+$auth = array(
+    'access_token' => 'your access token',
+    'refresh_token' => 'your refresh token');
+$wrap = new CS_REST_Lists('List ID', $auth);
 
 $result = $wrap->delete_custom_field('Custom field key');
 
-echo "Result of DELETE /api/v3/lists/{ID}/{Key}\n<br />";
+echo "Result of DELETE /api/v3.1/lists/{ID}/{Key}\n<br />";
 if($result->was_successful()) {
     echo "Deleted with code\n<br />".$result->http_status_code;
 } else {

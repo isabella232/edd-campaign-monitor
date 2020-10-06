@@ -1,26 +1,33 @@
 <?php
 
-require_once 'simpletest/autorun.php';
-require_once '../class/transport.php';
-require_once '../class/serialisation.php';
-require_once '../class/log.php';
-require_once '../csrest_lists.php';
+require_once __DIR__.'/../vendor/autoload.php';
+require_once __DIR__.'/../vendor/simpletest/simpletest/autorun.php';
 
 @Mock::generate('CS_REST_Log');
 @Mock::generate('CS_REST_NativeJsonSerialiser');
 @Mock::generate('CS_REST_CurlTransport');
 
-class CS_REST_TestLists extends CS_REST_TestBase {
+class CS_REST_ApiKeyTestLists extends CS_REST_TestLists {
+    var $auth = array('api_key' => 'not a real api key');
+}
+
+class CS_REST_OAuthTestLists extends CS_REST_TestLists {
+    var $auth = array(
+        'access_token' => '7y872y3872i3eh',
+        'refresh_token' => 'kjw8qjd9ow8jo');
+}
+
+abstract class CS_REST_TestLists extends CS_REST_TestBase {
     var $list_id = 'not a real list id';
     var $list_base_route;
 
     function set_up_inner() {
         $this->list_base_route = $this->base_route.'lists/'.$this->list_id.'/';
-        $this->wrapper = &new CS_REST_Lists($this->list_id, $this->api_key, $this->protocol, $this->log_level,
+        $this->wrapper = new CS_REST_Lists($this->list_id, $this->auth, $this->protocol, $this->log_level,
         $this->api_host, $this->mock_log, $this->mock_serialiser, $this->mock_transport);
     }
 
-    function testcreate() {
+    function testcreate_without_unsubscribe_setting() {
         $raw_result = 'the new list id';
         $client_id = 'not a real client id';
         $response_code = 200;
@@ -48,7 +55,36 @@ class CS_REST_TestLists extends CS_REST_TestBase {
         $this->assertIdentical($expected_result, $result);
     }
 
-    function testupdate() {
+    function testcreate_with_unsubscribe_setting() {
+        $raw_result = 'the new list id';
+        $client_id = 'not a real client id';
+        $response_code = 200;
+
+        $call_options = $this->get_call_options($this->base_route.'lists/'.$client_id.'.json', 'POST');
+
+        $list_info = array (
+            'Title' => 'ABC Widgets',
+            'UnsubscribeURL' => 'Widget Man!',
+            'UnsubscribeSetting' => CS_REST_LIST_UNSUBSCRIBE_SETTING_ALL_CLIENT_LISTS
+        );
+
+        $transport_result = array (
+            'code' => $response_code, 
+            'response' => $raw_result
+        );
+        
+        $expected_result = new CS_REST_Wrapper_Result($raw_result, $response_code);
+
+        $call_options['data'] = 'list info was serialised to this';
+        $this->setup_transport_and_serialisation($transport_result, $call_options,
+            $raw_result, $raw_result, 'list info was serialised to this', $list_info, $response_code);
+
+        $result = $this->wrapper->create($client_id, $list_info);
+
+        $this->assertIdentical($expected_result, $result);
+    }
+
+    function testupdate_without_unsubscribe_setting() {
         $raw_result = '';
 
         $call_options = $this->get_call_options(trim($this->list_base_route, '/').'.json', 'PUT');
@@ -56,6 +92,38 @@ class CS_REST_TestLists extends CS_REST_TestBase {
         $list_info = array (
             'Title' => 'ABC Widgets',
             'UnsubscribeURL' => 'Widget Man!'
+        );
+
+        $this->general_test_with_argument('update', $list_info, $call_options,
+            $raw_result, $raw_result, 'list info was serialised to this');
+    }
+
+    function testupdate_with_unsubscribe_setting() {
+        $raw_result = '';
+
+        $call_options = $this->get_call_options(trim($this->list_base_route, '/').'.json', 'PUT');
+
+        $list_info = array (
+            'Title' => 'ABC Widgets',
+            'UnsubscribeURL' => 'Widget Man!',
+            'UnsubscribeSetting' => CS_REST_LIST_UNSUBSCRIBE_SETTING_ALL_CLIENT_LISTS
+        );
+
+        $this->general_test_with_argument('update', $list_info, $call_options,
+            $raw_result, $raw_result, 'list info was serialised to this');
+    }
+
+    function testupdate_with_unsubscribe_setting_and_supp_list_options() {
+        $raw_result = '';
+
+        $call_options = $this->get_call_options(trim($this->list_base_route, '/').'.json', 'PUT');
+
+        $list_info = array (
+            'Title' => 'ABC Widgets',
+            'UnsubscribeURL' => 'Widget Man!',
+            'UnsubscribeSetting' => CS_REST_LIST_UNSUBSCRIBE_SETTING_ALL_CLIENT_LISTS,
+            'AddUnsubscribesToSuppList' => true,
+            'ScrubActiveWithSuppList' => true
         );
 
         $this->general_test_with_argument('update', $list_info, $call_options,
@@ -74,6 +142,37 @@ class CS_REST_TestLists extends CS_REST_TestBase {
 
         $this->general_test_with_argument('create_custom_field', $custom_field, $call_options,
         $raw_result, $raw_result, 'custom field was serialised to this');
+    }
+
+    function testupdate_custom_field() {
+        $raw_result = '';
+        $field_key = 'not a real custom field';
+        $response_code = 200;
+
+        $call_options = $this->get_call_options(
+            $this->list_base_route.'customfields/'.rawurlencode($field_key).'.json', 'PUT');
+          
+        $keep_existing = true;
+
+        $serialise_input = array(
+            'FieldName' => 'new field name',
+            'VisibleInPreferenceCenter' => true
+        );
+
+        $transport_result = array (
+            'code' => $response_code,
+            'response' => $raw_result
+        );
+
+        $expected_result = new CS_REST_Wrapper_Result($raw_result, $response_code);
+
+        $call_options['data'] = 'options were serialised to this';
+        $this->setup_transport_and_serialisation($transport_result, $call_options,
+            $raw_result, $raw_result, 'options were serialised to this', $serialise_input, $response_code);
+
+        $result = $this->wrapper->update_custom_field($field_key, $serialise_input);
+
+        $this->assertIdentical($expected_result, $result);
     }
 
     function testupdate_field_options() {
@@ -173,6 +272,53 @@ class CS_REST_TestLists extends CS_REST_TestBase {
             $deserialised, $raw_result, NULL, NULL, $response_code);
 
         $result = $this->wrapper->get_active_subscribers($since);
+
+        $this->assertIdentical($expected_result, $result);
+    }
+
+    function testget_active_tracking() {
+        $raw_result = 'some subscribers';
+        $since = '2020';
+        $response_code = 200;
+        $deserialised = array('Subscriber 1', 'Subscriber 2');
+        $tracking_pref = 'true';
+
+        $call_options = $this->get_call_options($this->list_base_route.'active.json?date='.$since.'&includeTrackingPreference='.$tracking_pref);
+
+        $transport_result = array (
+            'code' => $response_code, 
+            'response' => $raw_result
+        );
+        
+        $expected_result = new CS_REST_Wrapper_Result($deserialised, $response_code);
+
+        $this->setup_transport_and_serialisation($transport_result, $call_options,
+            $deserialised, $raw_result, NULL, NULL, $response_code);
+
+        $result = $this->wrapper->get_active_subscribers($since, null, null, null, null, true);
+
+        $this->assertIdentical($expected_result, $result);
+    }
+
+
+    function testget_unconfirmed_subscribers() {
+        $raw_result = 'some subscribers';
+        $since = '2020';
+        $response_code = 200;
+        $deserialised = array('Subscriber 1', 'Subscriber 2');
+        $call_options = $this->get_call_options($this->list_base_route.'unconfirmed.json?date='.$since);
+
+        $transport_result = array (
+            'code' => $response_code, 
+            'response' => $raw_result
+        );
+        
+        $expected_result = new CS_REST_Wrapper_Result($deserialised, $response_code);
+
+        $this->setup_transport_and_serialisation($transport_result, $call_options,
+            $deserialised, $raw_result, NULL, NULL, $response_code);
+
+        $result = $this->wrapper->get_unconfirmed_subscribers($since);
 
         $this->assertIdentical($expected_result, $result);
     }
