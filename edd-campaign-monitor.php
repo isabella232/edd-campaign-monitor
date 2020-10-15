@@ -1,16 +1,19 @@
 <?php
 /*
 Plugin Name: Easy Digital Downloads - Campaign Monitor
-Plugin URL: http://easydigitaldownloads.com/extension/campaign-monitor
+Plugin URL: https://easydigitaldownloads.com/downloads/campaign-monitor/
 Description: Include a Campaign Monitor signup option with your Easy Digital Downloads checkout
 Version: 1.1.1
-Author: Pippin Williamson
-Author URI: http://pippinsplugins.com
+Author: Sandhills Development, LLC
+Author URI: https://sandhillsdev.com/
 Contributors: Pippin Williamson
 */
 
-if(!defined('EDDCP_PLUGIN_DIR')) {
-	define('EDDCP_PLUGIN_DIR', dirname(__FILE__));
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) exit;
+
+if( ! defined( 'EDDCP_PLUGIN_DIR' ) ) {
+	define( 'EDDCP_PLUGIN_DIR', dirname( __FILE__ ) );
 }
 
 
@@ -21,8 +24,25 @@ if(!defined('EDDCP_PLUGIN_DIR')) {
 */
 
 if( class_exists( 'EDD_License' ) ) {
-	$edd_cm_license = new EDD_License( __FILE__, 'Campaign Monitor', '1.1.1', 'Pippin Williamson', 'eddcp_license_key' );
+	$edd_cm_license = new EDD_License( __FILE__, 'Campaign Monitor', '1.1.1', 'Sandhills Development, LLC', 'eddcp_license_key', null, 974 );
 }
+
+/**
+ * Registers the subsection for EDD Settings.
+ *
+ * @access public
+ * @since  1.1.2
+ *
+ * @param  array $sections Settings Sections.
+ *
+ * @return array Sections with Campaign Monitor added.
+ */
+function eddcp_settings_section( $sections ) {
+	$sections['campaignmonitor'] = __( 'Campaign Monitor', 'eddcp' );
+
+	return $sections;
+}
+add_filter( 'edd_settings_sections_extensions', 'eddcp_settings_section' );
 
 // adds the settings to the Misc section
 function eddcp_add_settings($settings) {
@@ -64,7 +84,11 @@ function eddcp_add_settings($settings) {
 		)
 	);
 
-	return array_merge($settings, $eddcp_settings);
+	if ( version_compare( EDD_VERSION, 2.5, '>=' ) ) {
+		$eddcp_settings = array( 'campaignmonitor' => $eddcp_settings );
+	}
+
+	return array_merge( $settings, $eddcp_settings );
 }
 add_filter('edd_settings_extensions', 'eddcp_add_settings');
 
