@@ -31,7 +31,7 @@ if( class_exists( 'EDD_License' ) ) {
  * Registers the subsection for EDD Settings.
  *
  * @access public
- * @since  1.2
+ * @since  1.1.2
  *
  * @param  array $sections Settings Sections.
  *
