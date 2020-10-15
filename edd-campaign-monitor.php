@@ -3,7 +3,7 @@
 Plugin Name: Easy Digital Downloads - Campaign Monitor
 Plugin URL: https://easydigitaldownloads.com/downloads/campaign-monitor/
 Description: Include a Campaign Monitor signup option with your Easy Digital Downloads checkout
-Version: 1.2
+Version: 1.1.1
 Author: Sandhills Development, LLC
 Author URI: https://sandhillsdev.com/
 Contributors: Pippin Williamson
@@ -24,14 +24,14 @@ if( ! defined( 'EDDCP_PLUGIN_DIR' ) ) {
 */
 
 if( class_exists( 'EDD_License' ) ) {
-	$edd_cm_license = new EDD_License( __FILE__, 'Campaign Monitor', '1.2', 'Sandhills Development, LLC', 'eddcp_license_key', null, 974 );
+	$edd_cm_license = new EDD_License( __FILE__, 'Campaign Monitor', '1.1.1', 'Sandhills Development, LLC', 'eddcp_license_key', null, 974 );
 }
 
 /**
  * Registers the subsection for EDD Settings.
  *
  * @access public
- * @since  1.2
+ * @since  1.1.2
  *
  * @param  array $sections Settings Sections.
  *
