@@ -177,13 +177,19 @@ function eddcp_subscribe_fields() {
 }
 add_action('edd_purchase_form_before_submit', 'eddcp_subscribe_fields', 100);
 
-// checks whether a user should be signed up for he mailchimp list
-function eddcp_check_for_email_signup($posted, $user_info) {
-	if( isset( $posted['eddcp_campaign_monitor_signup'] ) ) {
+/**
+ * Checks whether a user should be signed up for the Campaign Monitor list.
+ *
+ * @param array $posted    The $_POST data from the checkout.
+ * @param array $user_info The array of user information.
+ * @return void
+ */
+function eddcp_check_for_email_signup( $posted, $user_info ) {
+	if ( ! empty( $posted['eddcp_campaign_monitor_signup'] ) ) {
 
 		$email = $user_info['email'];
-		$name = $user_info['first_name'] . ' ' . $user_info['last_name'];
-		eddcp_subscribe_email($email, $name);
+		$name  = $user_info['first_name'] . ' ' . $user_info['last_name'];
+		eddcp_subscribe_email( $email, $name );
 	}
 }
-add_action('edd_checkout_before_gateway', 'eddcp_check_for_email_signup', 10, 2);
+add_action( 'edd_checkout_before_gateway', 'eddcp_check_for_email_signup', 10, 2 );
