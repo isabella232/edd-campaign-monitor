@@ -1,21 +1,27 @@
 <?php
-/*
-Plugin Name: Easy Digital Downloads - Campaign Monitor
-Plugin URL: https://easydigitaldownloads.com/downloads/campaign-monitor/
-Description: Include a Campaign Monitor signup option with your Easy Digital Downloads checkout
-Version: 1.1.1
-Author: Sandhills Development, LLC
-Author URI: https://sandhillsdev.com/
-Contributors: Pippin Williamson
+/**
+ * Plugin Name: Easy Digital Downloads - Campaign Monitor
+ * Plugin URI: https://easydigitaldownloads.com/downloads/campaign-monitor/
+ * Description: Include a Campaign Monitor signup option with your Easy Digital Downloads checkout.
+ * Version: 1.1.1
+ * Author: Easy Digital Downloads
+ * Author URI: https://easydigitaldownloads.com/
+ * Contributors: Pippin Williamson
 */
 
 // Exit if accessed directly
-if ( ! defined( 'ABSPATH' ) ) exit;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 if( ! defined( 'EDDCP_PLUGIN_DIR' ) ) {
 	define( 'EDDCP_PLUGIN_DIR', dirname( __FILE__ ) );
 }
 
+// Define the plugin version as a constant.
+if ( ! defined( 'EDDCP_VERSION' ) ) {
+	define( 'EDDCP_VERISON', '1.1.1' );
+}
 
 /*
 |--------------------------------------------------------------------------
@@ -23,9 +29,19 @@ if( ! defined( 'EDDCP_PLUGIN_DIR' ) ) {
 |--------------------------------------------------------------------------
 */
 
-if( class_exists( 'EDD_License' ) ) {
-	$edd_cm_license = new EDD_License( __FILE__, 'Campaign Monitor', '1.1.1', 'Sandhills Development, LLC', 'eddcp_license_key', null, 974 );
-}
+/**
+ * Sets up licensing with EDD core.
+ * @todo When minimum EDD version is >= 2.11.4, remove checks.
+ */
+add_action( 'plugins_loaded', function () {
+	if ( class_exists( '\\EDD\\Extensions\\ExtensionRegistry' ) ) {
+		add_action( 'edd_extension_license_init', function( \EDD\Extensions\ExtensionRegistry $registry ) {
+			$registry->addExtension( __FILE__, 'Campaign Monitor', 974, EDDCP_VERISON, 'eddcp_license_key' );
+		} );
+	} elseif ( class_exists( 'EDD_License' ) ) {
+		new EDD_License( __FILE__, 'Campaign Monitor', EDDCP_VERISON, 'Easy Digital Downloads', 'eddcp_license_key', null, 974 );
+	}
+} );
 
 /**
  * Registers the subsection for EDD Settings.
