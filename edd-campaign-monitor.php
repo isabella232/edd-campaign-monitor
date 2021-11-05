@@ -23,6 +23,9 @@ if ( ! defined( 'EDDCP_VERSION' ) ) {
 	define( 'EDDCP_VERISON', '1.1.1' );
 }
 
+// Autoload vendor files.
+require_once dirname( __FILE__ ) . '/vendor/autoload.php';
+
 /*
 |--------------------------------------------------------------------------
 | LICENSING / UPDATES
@@ -111,27 +114,22 @@ add_filter('edd_settings_extensions', 'eddcp_add_settings');
 
 // get an array of all campaign monitor subscription lists
 function eddcp_get_lists() {
-
 	global $edd_options;
 
-	if( ! empty( $edd_options['eddcp_api'] ) && ! empty( $edd_options['eddcp_client'] ) ) {
-		$lists = array();
+	$lists = array();
+	if ( empty( $edd_options['eddcp_api'] ) || empty( $edd_options['eddcp_client'] ) ) {
+		return $lists;
+	}
+	$wrap   = new CS_REST_Clients( $edd_options['eddcp_client'], $edd_options['eddcp_api'] );
+	$result = $wrap->get_lists();
 
-		if( ! class_exists( 'CS_REST_Clients' ) )
-			require_once(EDDCP_PLUGIN_DIR . '/vendor/csrest_clients.php');
-
-		$wrap = new CS_REST_Clients($edd_options['eddcp_client'], $edd_options['eddcp_api']);
-		//echo '<pre>'; print_r( $wrap ); echo '</pre>'; exit;
-		$result = $wrap->get_lists();
-
-		if($result->was_successful()) {
-			foreach($result->response as $list) {
-				$lists[$list->ListID] = $list->Name;
-			}
-			return $lists;
+	if ( $result->was_successful() ) {
+		foreach ( $result->response as $list ) {
+			$lists[ $list->ListID ] = $list->Name;
 		}
 	}
-	return array();
+
+	return $lists;
 }
 
 // adds an email to the mailchimp subscription list
@@ -139,9 +137,6 @@ function eddcp_subscribe_email($email, $name) {
 	global $edd_options;
 
 	if( ! empty( $edd_options['eddcp_api'] ) ) {
-
-		if( ! class_exists( 'CS_REST_Subscribers' ) )
-			require_once(EDDCP_PLUGIN_DIR . '/vendor/csrest_subscribers.php');
 
 		$wrap = new CS_REST_Subscribers( trim( $edd_options['eddcp_list'] ), trim( $edd_options['eddcp_api'] ) );
 
