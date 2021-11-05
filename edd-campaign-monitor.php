@@ -18,6 +18,10 @@ if( ! defined( 'EDDCP_PLUGIN_DIR' ) ) {
 	define( 'EDDCP_PLUGIN_DIR', dirname( __FILE__ ) );
 }
 
+// Define the plugin version as a constant.
+if ( ! defined( 'EDDCP_VERSION' ) ) {
+	define( 'EDDCP_VERISON', '1.1.1' );
+}
 
 /*
 |--------------------------------------------------------------------------
@@ -32,10 +36,10 @@ if( ! defined( 'EDDCP_PLUGIN_DIR' ) ) {
 add_action( 'plugins_loaded', function () {
 	if ( class_exists( '\\EDD\\Extensions\\ExtensionRegistry' ) ) {
 		add_action( 'edd_extension_license_init', function( \EDD\Extensions\ExtensionRegistry $registry ) {
-			$registry->addExtension( __FILE__, 'Campaign Monitor', 974, '1.1.1', 'eddcp_license_key' );
+			$registry->addExtension( __FILE__, 'Campaign Monitor', 974, EDDCP_VERISON, 'eddcp_license_key' );
 		} );
 	} elseif ( class_exists( 'EDD_License' ) ) {
-		new EDD_License( __FILE__, 'Campaign Monitor', '1.1.1', 'Easy Digital Downloads', 'eddcp_license_key', null, 974 );
+		new EDD_License( __FILE__, 'Campaign Monitor', EDDCP_VERISON, 'Easy Digital Downloads', 'eddcp_license_key', null, 974 );
 	}
 } );
 
