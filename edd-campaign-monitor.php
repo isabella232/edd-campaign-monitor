@@ -112,16 +112,22 @@ function eddcp_add_settings($settings) {
 add_filter('edd_settings_extensions', 'eddcp_add_settings');
 
 
-// get an array of all campaign monitor subscription lists
+/**
+ * Gets an array of all Campaign Monitor lists.
+ *
+ * @return array
+ */
 function eddcp_get_lists() {
 	global $edd_options;
 
-	$lists = array();
+	$lists = array(
+		'' => __( 'Select a list', 'eddcp' ),
+	);
 	if ( empty( $edd_options['eddcp_api'] ) || empty( $edd_options['eddcp_client'] ) ) {
 		return $lists;
 	}
-	$wrap   = new CS_REST_Clients( $edd_options['eddcp_client'], $edd_options['eddcp_api'] );
-	$result = $wrap->get_lists();
+	$rest_clients = new CS_REST_Clients( $edd_options['eddcp_client'], $edd_options['eddcp_api'] );
+	$result       = $rest_clients->get_lists();
 
 	if ( $result->was_successful() ) {
 		foreach ( $result->response as $list ) {
@@ -132,50 +138,62 @@ function eddcp_get_lists() {
 	return $lists;
 }
 
-// adds an email to the mailchimp subscription list
-function eddcp_subscribe_email($email, $name) {
+/**
+ * Adds a subscriber to the Campaign Monitor list.
+ *
+ * @param string $email
+ * @param string $name
+ * @return bool
+ */
+function eddcp_subscribe_email( $email, $name ) {
 	global $edd_options;
 
-	if( ! empty( $edd_options['eddcp_api'] ) ) {
-
-		$wrap = new CS_REST_Subscribers( trim( $edd_options['eddcp_list'] ), trim( $edd_options['eddcp_api'] ) );
-
-		$join_date        = new stdClass;
-		$join_date->key   = 'JoinDate';
-		$join_date->value = date( 'm-d-Y H:i:s' );
-
-		$custom_fields = array();
-		$custom_fields[] = $join_date;
-
-		$subscribe = $wrap->add( array(
-			'EmailAddress' => $email,
-			'Name' => $name,
-			'Resubscribe' => true,
-			'ConsentToTrack' => 'Yes',
-			'CustomFields' => $custom_fields
-		) );
-
-		if($subscribe->was_successful()) {
-			return true;
-		}
+	if ( empty( $edd_options['eddcp_api'] ) || empty( $edd_options['eddcp_list'] ) ) {
+		return false;
 	}
-	return false;
+
+	$rest_subscribers = new CS_REST_Subscribers( trim( $edd_options['eddcp_list'] ), trim( $edd_options['eddcp_api'] ) );
+
+	$join_date        = new stdClass();
+	$join_date->key   = 'JoinDate';
+	$join_date->value = date( 'm-d-Y H:i:s' );
+
+	$custom_fields = array(
+		$join_date,
+	);
+
+	$subscribe = $rest_subscribers->add(
+		array(
+			'EmailAddress'   => $email,
+			'Name'           => $name,
+			'Resubscribe'    => true,
+			'ConsentToTrack' => 'Yes',
+			'CustomFields'   => $custom_fields,
+		)
+	);
+
+	return $subscribe->was_successful();
 }
 
-// displays the subscribe checkbox
+/**
+ * Displays the subscribe checkbox.
+ *
+ * @return void
+ */
 function eddcp_subscribe_fields() {
 	global $edd_options;
-	ob_start();
-		if(strlen(trim($edd_options['eddcp_api'])) > 0 ) { ?>
-		<p>
-			<input name="eddcp_campaign_monitor_signup" id="eddcp_campaign_monitor_signup" type="checkbox" checked="checked"/>
-			<label for="eddcp_campaign_monitor_signup"><?php echo isset($edd_options['eddcp_label']) ? $edd_options['eddcp_label'] : __('Sign up for our mailing list', 'eddcp'); ?></label>
-		</p>
-		<?php
+	if ( empty( $edd_options['eddcp_api'] ) || empty( $edd_options['eddcp_list'] ) ) {
+		return;
 	}
-	echo ob_get_clean();
+	$label = ! empty( $edd_options['eddcp_label'] ) ? $edd_options['eddcp_label'] : __( 'Sign up for our mailing list', 'eddcp' );
+	?>
+	<p>
+		<input name="eddcp_campaign_monitor_signup" id="eddcp_campaign_monitor_signup" type="checkbox" checked="checked"/>
+		<label for="eddcp_campaign_monitor_signup"><?php echo esc_html( $label ); ?></label>
+	</p>
+	<?php
 }
-add_action('edd_purchase_form_before_submit', 'eddcp_subscribe_fields', 100);
+add_action( 'edd_purchase_form_before_submit', 'eddcp_subscribe_fields', 100 );
 
 /**
  * Checks whether a user should be signed up for the Campaign Monitor list.
