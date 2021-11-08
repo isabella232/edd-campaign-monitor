@@ -1,0 +1,14 @@
+{
+	"name": "easydigitaldownloads/edd-campaign-monitor",
+	"type": "wordpress-plugin",
+	"description": "Include a Campaign Monitor signup option with your Easy Digital Downloads checkout.",
+	"keywords": ["edd", "eddwp", "easy digital downloads"],
+	"homepage": "https://easydigitaldownloads.com/",
+	"license": "GPL-2.0+",
+	"support": {
+		"issues": "https://easydigitaldownloads.com/support"
+	},
+	"require": {
+		"campaignmonitor/createsend-php": "^6.1"
+	}
+}
