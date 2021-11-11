@@ -3,7 +3,7 @@
  * Plugin Name: Easy Digital Downloads - Campaign Monitor
  * Plugin URI: https://easydigitaldownloads.com/downloads/campaign-monitor/
  * Description: Include a Campaign Monitor signup option with your Easy Digital Downloads checkout.
- * Version: 1.1.1
+ * Version: 1.1.2
  * Author: Easy Digital Downloads
  * Author URI: https://easydigitaldownloads.com/
  * Contributors: Pippin Williamson
@@ -20,7 +20,7 @@ if( ! defined( 'EDDCP_PLUGIN_DIR' ) ) {
 
 // Define the plugin version as a constant.
 if ( ! defined( 'EDDCP_VERSION' ) ) {
-	define( 'EDDCP_VERISON', '1.1.1' );
+	define( 'EDDCP_VERISON', '1.1.2' );
 }
 
 // Autoload vendor files.
